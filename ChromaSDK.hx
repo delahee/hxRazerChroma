@@ -67,12 +67,13 @@ class ChromaMousepad implements ChromaDeviceImpl{
 		var data = {
 			effect:CHROMA_STATIC, 
 			param: {
-				color:api.bgr(c),
+				color:api.bgr(c&0xffffff),
 			},
 		};
 		h.forPut(api.json(data));
 		h.request();
 		h.onError = h.onResponse = function(data){
+			#if debug trace("cmp:"+data); #end
 			h.dispose();
 		};
 	}
@@ -129,12 +130,15 @@ class ChromaMouse implements ChromaDeviceImpl{
 		var data = {
 			effect:CHROMA_STATIC, 
 			param: {
-				color:api.bgr(c),
+				color:api.bgr(c&0x00ffFFff),
 			},
 		};
 		h.forPut(api.json(data));
 		h.request();
 		h.onError = h.onResponse = function(data){
+			#if debug
+			//trace(data);
+			#end
 			h.dispose();
 		};
 	}
@@ -330,7 +334,7 @@ class ChromaLink implements ChromaDeviceImpl{
 		var data = {
 			effect:CHROMA_STATIC, 
 			param: {
-				color:api.bgr(c),
+				color:api.bgr(c&0x00ffFFff),
 			},
 		};
 		h.forPut(api.json(data));
@@ -357,6 +361,7 @@ class ChromaLink implements ChromaDeviceImpl{
 class ChromaSDK {
 	
 	public static inline var 	DEBUG = true;
+	public static function 		ALL_DEVICES() return Type.allEnums(ChromaDevice);
 	public var URL = "http://localhost:54235/razer/chromasdk";
 	
 	public var initialised = false;
@@ -441,7 +446,10 @@ class ChromaSDK {
 		return headset;
 	}
 	
+	var emptyArray = [];
 	public function devices() : Array<ChromaDeviceImpl> {
+		if ( !initialised ) return emptyArray;
+		
 		var a : Array<ChromaDeviceImpl> = [];
 		if ( conf.supported.indexOf(CDChromalink) >= 0)	a.push(getChromaLink());
 		if ( conf.supported.indexOf(CDKeyboard) >= 0) 	a.push(getKeyboard());
