@@ -67,7 +67,7 @@ class ChromaMousepad implements ChromaDeviceImpl{
 		var data = {
 			effect:CHROMA_STATIC, 
 			param: {
-				color:api.bgr(c&0xffffff),
+				color:api.bgr(c&0xffFFff),
 			},
 		};
 		h.forPut(api.json(data));
@@ -480,12 +480,11 @@ class ChromaSDK {
 	}
 	
 	public function bgr( rgb:Int) : Int{
-		var r = rgb & 0x255;
-		var g = (rgb>>8) & 0x255;
-		var b = (rgb >> 16) & 0x255;
+		var r = rgb & 0xff;
+		var g = (rgb>>8) & 0xff;
+		var b = (rgb >> 16) & 0xff;
 		return b | (g << 8) | (r << 16);
 	}
-	
 	
 	public function json(d:Dynamic) return haxe.Json.stringify(d);
 	
@@ -500,7 +499,7 @@ class ChromaSDK {
 		return api;
 	}
 	
-	public var heartBeatDelay = 8.0;
+	public var heartBeatDelay = 2.0;
 	
 	var beat = 0.0;
 	var prevTime = haxe.Timer.stamp();
