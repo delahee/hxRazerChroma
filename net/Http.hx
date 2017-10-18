@@ -1,4 +1,4 @@
-package as3;
+package net;
 
 import flash.net.URLRequest;
 import flash.net.URLLoader;

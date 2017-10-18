@@ -2,11 +2,11 @@
 
 @:enum 
 abstract CHROMA_ID (String) from String to String{
-	var CHROMA_NONE = "CHROMA_NONE";
-	var CHROMA_STATIC = "CHROMA_STATIC";
-	var CHROMA_CUSTOM = "CHROMA_CUSTOM";
-	var CHROMA_CUSTOM2 = "CHROMA_CUSTOM2";
-	var CHROMA_CUSTOM_KEY = "CHROMA_CUSTOM_KEY";
+	var CHROMA_NONE			 	= "CHROMA_NONE";
+	var CHROMA_STATIC		 	= "CHROMA_STATIC";
+	var CHROMA_CUSTOM 			= "CHROMA_CUSTOM";
+	var CHROMA_CUSTOM2 			= "CHROMA_CUSTOM2";
+	var CHROMA_CUSTOM_KEY 		= "CHROMA_CUSTOM_KEY";
 }
 
 enum ChromaDevice{
@@ -48,7 +48,7 @@ class ChromaMousepad implements ChromaDeviceImpl{
 	}
 	
 	inline function getRequest(){
-		var h = new as3.Http(url);
+		var h = new net.Http(url);
 		h.addHeader("content-type", "application/json");
 		return h;
 	}
@@ -111,7 +111,7 @@ class ChromaMouse implements ChromaDeviceImpl{
 	}
 	
 	inline function getRequest(){
-		var h = new as3.Http(url);
+		var h = new net.Http(url);
 		h.addHeader("content-type", "application/json");
 		return h;
 	}
@@ -176,7 +176,7 @@ class ChromaKeypad implements ChromaDeviceImpl{
 	}
 	
 	inline function getRequest(){
-		var h = new as3.Http(url);
+		var h = new net.Http(url);
 		h.addHeader("content-type", "application/json");
 		return h;
 	}
@@ -238,7 +238,7 @@ class ChromaKeyboard implements ChromaDeviceImpl{
 	}
 	
 	inline function getRequest(){
-		var h = new as3.Http(url);
+		var h = new net.Http(url);
 		h.addHeader("content-type", "application/json");
 		return h;
 	}
@@ -315,7 +315,7 @@ class ChromaLink implements ChromaDeviceImpl{
 	}
 	
 	inline function getRequest(){
-		var h = new as3.Http(url);
+		var h = new net.Http(url);
 		h.addHeader("content-type", "application/json");
 		return h;
 	}
@@ -400,13 +400,16 @@ class ChromaSDK {
 		h.setPostData( data );
 		h.request(true);
 		h.onData = function(d:String){
-			var data : Dynamic = haxe.Json.parse(d);
-			trace(d);
-			sessionId = data.sessionId;
-			URL = data.uri;
-			initialised = true;
-			for ( d in devices())
-				d.rebuildUrl();
+			try{
+				var data : Dynamic = haxe.Json.parse(d);
+				sessionId = data.sessionId;
+				URL = data.uri;
+				initialised = true;
+				for ( d in devices())
+					d.rebuildUrl();
+			}catch (d:Dynamic){
+				trace("Failed:" + d);
+			}
 		};
 	}
 	
@@ -467,11 +470,12 @@ class ChromaSDK {
 	
 	public function uninit(){
 		initialised = false;
-		var h = new as3.Http(URL);
+		var h = new net.Http(URL);
 		h.addHeader("content-type", "application/json");
 		
 		#if debug
 		h.onResponse = function(d){
+			h.dispose();
 			trace("uninit:"+d);
 		}
 		#end
@@ -491,7 +495,6 @@ class ChromaSDK {
 	static var api : ChromaSDK;
 	
 	public static function get(){
-		
 		if ( api != null ) return api;
 		
 		api = new ChromaSDK();
@@ -499,7 +502,7 @@ class ChromaSDK {
 		return api;
 	}
 	
-	public var heartBeatDelay = 2.0;
+	public var heartBeatDelay = 8.0;
 	
 	var beat = 0.0;
 	var prevTime = haxe.Timer.stamp();
@@ -516,15 +519,15 @@ class ChromaSDK {
 	function heartbeat(){
 		if ( !initialised ) return;
 		
-		var h = new as3.Http(URL+"/heartbeat");
+		var h = new net.Http(URL+"/heartbeat");
 		h.addHeader("content-type", "application/json");
 		h.forPut(null);
 		h.request();
 		
 		#if debug
 		h.onResponse = function(d){
-			trace(d);
-		}
+			h.dispose();
+		};
 		#end
 	}
 	
