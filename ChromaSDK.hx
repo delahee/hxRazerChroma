@@ -73,7 +73,7 @@ class ChromaMousepad implements ChromaDeviceImpl{
 		h.forPut(api.json(data));
 		h.request();
 		h.onError = h.onResponse = function(data){
-			#if debug trace("cmp:"+data); #end
+			//#if debug trace("cmp:"+data); #end
 			h.dispose();
 		};
 	}
@@ -407,6 +407,9 @@ class ChromaSDK {
 				initialised = true;
 				for ( d in devices())
 					d.rebuildUrl();
+				#if debug
+				trace("[Chroma] Ready to serve");
+				#end
 			}catch (d:Dynamic){
 				trace("Failed:" + d);
 			}
